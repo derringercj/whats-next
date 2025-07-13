@@ -1,9 +1,18 @@
 from sentence_transformers import SentenceTransformer
+import pandas as pd
+import jsonlines
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+def filter(obj):
+    pass
 
-sentence = "University of Alabama"
 
-embeddings = model.encode(sentence)
+def main():
+    data = []
+    with jsonlines.open("goodreads_books.json") as reader:
+        for i in range(5):
+            print(i)
+        
 
-print(embeddings.shape)
+
+    model = SentenceTransformer("all-mpnet-base-v2")
+
