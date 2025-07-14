@@ -1,0 +1,14 @@
+[project]
+name = "what's-next"
+version = "0.1"
+description = "A book recommendation algorithm using NLP and embeddings"
+authors = [{name = "Casey Derringer", email = "derringercj@gmail.com"}]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "jsonlines==4.0.0",
+    "pandas==2.3.1",
+    "sentence_transformers==5.0.0"
+]

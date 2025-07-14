@@ -1,0 +1,1 @@
+# whatsnext/__init__.py
