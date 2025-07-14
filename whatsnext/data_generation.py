@@ -1,33 +1,37 @@
-from urllib.request import urlretrieve
 from sentence_transformers import SentenceTransformer
+from urllib.request import urlretrieve
 
+import constants as constant
 import pandas as pd
 
-import os
-import jsonlines
 import gzip
+import jsonlines
+import operator
+import os
 
-BOOKS_URL = "https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_books.json.gz"
-BOOKS_FILENAME = "books.json.gz"
-AUTHORS_URL = "https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_book_authors.json.gz"
-AUTHORS_FILENAME = "authors.json.gz"
-GENRES_URL = "https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_book_genres_initial.json.gz"
-GENRES_FILENAME = "extracted_genres.json.gz"
-DIRECTORY_NAME = "data"
+
 
 def download_data():
+    # If data folder does not exist, create it and download the necessary json.gz files into it
     try:
-        os.mkdir(DIRECTORY_NAME)
-        print(f"Directory '{DIRECTORY_NAME}' CREATED SUCCESSFULLY.")
+        os.mkdir(constant.DIRECTORY_NAME)
+        print(f"Directory '{constant.DIRECTORY_NAME}' CREATED SUCCESSFULLY.")
+        
+        print("Beginning Data Download")
+        urlretrieve(constant.BOOKS_URL, constant.BOOKS_FILENAME)
+        print("Books Dataset Downloaded")
+        
+        urlretrieve(constant.AUTHORS_URL, constant.AUTHORS_FILENAME)
+        print("Authors Dataset Downloaded")
+        
+        urlretrieve(constant.GENRES_URL, constant.GENRES_FILENAME)
+        print("Genres Dataset Downloaded")
+
+    # Otherwise continue with program as normal
     except FileExistsError:
-        print(f"Directory '{DIRECTORY_NAME}' already exists. Continuing...")
+        print(f"Directory '{constant.DIRECTORY_NAME}' already exists. Continuing...")
     except Exception as e:
         print(f"An error occurred: {e}")
-    finally:
-        urlretrieve(BOOKS_URL, BOOKS_FILENAME)
-        urlretrieve(AUTHORS_URL, AUTHORS_FILENAME)
-        urlretrieve(GENRES_URL, GENRES_FILENAME)
-
 
 def filter(obj):
     # Saving only relevant information from each object
@@ -65,7 +69,7 @@ def format_data(objects_list):
 
 def main():
     # Open books json, and filter each object before saving it to the objects list
-    with jsonlines.Reader(gzip.open(BOOKS_FILENAME, mode="rt")) as reader:
+    with jsonlines.Reader(gzip.open(constant.BOOKS_FILENAME, mode="rt")) as reader:
         objects = []
         for obj in reader:
             try:
@@ -78,11 +82,13 @@ def main():
             filtered_object = filter(obj)
             objects.append(filtered_object)    
 
-    formatted_strings = format_data(objects)    
+    # Will need to revisit when data is converted into these formatted strings; will probably end up after reading authors
+    # formatted_strings = format_data(objects)    
+    # print(formatted_strings[0])
 
-    print(formatted_strings[0])
-
-    with jsonlines.Reader(gzip.open(AUTHORS_FILENAME, mode="rt")) as reader:
+    # Sorting our objects based on the value of the author_id, making replacement with author name easier
+    sorted_objects = sorted(objects, key=operator.itemgetter('Authors'))
+    with jsonlines.Reader(gzip.open(constant.AUTHORS_FILENAME, mode="rt")) as reader:
         for obj in reader:
             print(obj.keys())
             break
