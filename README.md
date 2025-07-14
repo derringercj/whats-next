@@ -1,10 +1,7 @@
 # book-rec-engine
 
-This program implements a modern and up-to-date book recommendation engine. Algorithms such as those hosted on Goodreads are ineffective and don't leverage the updated technology that helps analyze semantic similarity efficiently. The goal is for the user to input their favorite book, or a book that they want a similar recommendation for, and receive several books that are just as suited to your tastes.
+## Why?
+Two things about me: I love books and I love reading. As such, I am always revisiting the question of "What to read next?" as my tastes evolve and my interests bounce from one subject to another. I use tools like Goodreads as much as I use actual social media sites. But as most people know, Goodreads sucks. This is for a myriad of reasons, but most importantly to this project, their recommendation system is lousyyyyyy. Their are so many advancements in the field of ML and NLP that have improved the efficacy of recommendation systems across the media spectrum. My goal is to use one of these techniques to implement a new and more robust algorithm for recommending new books to read. 
 
-# Instructions
-Download the UCSD Book Graph Dataset
-```
-wget https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_books.json.gz
-gzip -d goodreads_books.json.gz
-```
+## How?
+This program leverages the UCSD Book Graph Goodreads dataset to represent a vast array of novels acorss all genres, centuries, and authors. This information is aggregated and stored in a vector space via embedding generation. This allows us to more adeptly examine and identify the similarities between books in regards to style, semantics, and feeling, providing recommendations far less surface level than other availble recommendation services currently available.
