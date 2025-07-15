@@ -1,5 +1,5 @@
 [project]
-name = "what's-next"
+name = "whats-next"
 version = "0.1"
 description = "A book recommendation algorithm using NLP and embeddings"
 authors = [{name = "Casey Derringer", email = "derringercj@gmail.com"}]

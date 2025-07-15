@@ -4,6 +4,7 @@ from urllib.request import urlretrieve
 import constants as constant
 import pandas as pd
 
+import bisect
 import gzip
 import jsonlines
 import operator
@@ -68,30 +69,32 @@ def format_data(objects_list):
     return formatted_strings
 
 def main():
+    download_data()
+    
     # Open books json, and filter each object before saving it to the objects list
     with jsonlines.Reader(gzip.open(constant.BOOKS_FILENAME, mode="rt")) as reader:
         objects = []
-        for obj in reader:
+        for book_obj in reader:
             try:
                 # Disregard outlier books
-                if(int(obj.get("ratings_count")) < 100):
+                if(int(book_obj.get("ratings_count")) < 100):
                     continue
             except:
                 # If ratings_count is empty, skip
                 continue
-            filtered_object = filter(obj)
+            filtered_object = filter(book_obj)
             objects.append(filtered_object)    
 
-    # Will need to revisit when data is converted into these formatted strings; will probably end up after reading authors
-    # formatted_strings = format_data(objects)    
-    # print(formatted_strings[0])
-
     # Sorting our objects based on the value of the author_id, making replacement with author name easier
-    sorted_objects = sorted(objects, key=operator.itemgetter('Authors'))
+    sorted_objects = sorted(objects, key=lambda x: x.get("authors", ""))
     with jsonlines.Reader(gzip.open(constant.AUTHORS_FILENAME, mode="rt")) as reader:
-        for obj in reader:
-            print(obj.keys())
-            break
+        for author_obj in reader:
+            # Returns the leftmost occurrence of the author_id in the books dataset of the current author object
+            index = bisect.bisect_left(sorted_objects, author_obj.get("name"))
+            author_name = author_obj.get("name")
+
+            
+            
 
 if __name__ == "__main__":
     main()
