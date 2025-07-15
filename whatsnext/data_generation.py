@@ -10,7 +10,9 @@ import jsonlines
 import operator
 import os
 
-
+# Replacing object author field currently holding author_id with author name
+def replace_ID(book_object, name):
+    book_object["author"] = name
 
 def download_data():
     # If data folder does not exist, create it and download the necessary json.gz files into it
@@ -34,7 +36,7 @@ def download_data():
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def filter(obj):
+def filter_book_object(obj):
     # Saving only relevant information from each object
     title = obj.get("title")
     author = obj.get("authors")
@@ -60,17 +62,20 @@ def format_data(objects_list):
     formatted_strings = []
 
     # Using information in each object, create contextual string for generating vector embedding
-    for object in objects_list:
-        compiled_string = "Title: " + object.get("title") + "\nAuthor: " + object.get("author") + "\nPublication Year: " + object.get("year") + \
-                            "\nPage Length: " + object.get("num_pages") + "\nSynopsis: " + object.get("description") + "\n"
+    for object in objects_list:        
+        compiled_string = (
+            f"Title: {object.get("title")}\n"
+            f"Author: {object.get("author")}\n"
+            f"Publication Year: {object.get("year")}\n"
+            f"Page Length: {object.get("num_pages")}\n"
+            f"Synopsis: {object.get("description")}\n"
+        )
         formatted_strings.append(compiled_string)
     
     # Return list of formatted strings
     return formatted_strings
 
-def main():
-    download_data()
-    
+def load_books():
     # Open books json, and filter each object before saving it to the objects list
     with jsonlines.Reader(gzip.open(constant.BOOKS_FILENAME, mode="rt")) as reader:
         objects = []
@@ -82,18 +87,40 @@ def main():
             except:
                 # If ratings_count is empty, skip
                 continue
-            filtered_object = filter(book_obj)
-            objects.append(filtered_object)    
+            # Call function to filter out unnecessary book info and add that filtered object to list
+            filtered_object = filter_book_object(book_obj)
+            objects.append(filtered_object)
+    
+    return objects
+
+# REPLACE BISECT WITH DICTIONARY
+def replace_author_ids(book_objects):
+    author_lookup = {}
+    
+    with jsonlines.Reader(gzip.open(constant.AUTHORS_FILENAME, mode="rt")) as reader:
+        for author in reader:
+            author_lookup[author["author_id"]] = author["name"]
+
+    for book in book_objects:
+        author_ids = book.get("author")
+        if author_ids:
+            book["author"] = ", ".join(author_lookup.get(author_id, "Unknown") for author_id in author_ids.split(", "))
+
+def main():
+    download_data()
+    books = load_books()  
 
     # Sorting our objects based on the value of the author_id, making replacement with author name easier
-    sorted_objects = sorted(objects, key=lambda x: x.get("authors", ""))
-    with jsonlines.Reader(gzip.open(constant.AUTHORS_FILENAME, mode="rt")) as reader:
-        for author_obj in reader:
-            # Returns the leftmost occurrence of the author_id in the books dataset of the current author object
-            index = bisect.bisect_left(sorted_objects, author_obj.get("name"))
-            author_name = author_obj.get("name")
+    sorted_objects = sorted(books, key=lambda x: x.get("authors", ""))
+    # Sorting verification
+    # for i in range(5):
+    #     print(sorted_objects[i].get("author_id"))
 
-            
+    # Replace author id in each book object with their actual name
+    replace_author_ids(sorted_objects)
+
+    # Generate list of strings represnting each book object
+    object_strings = format_data(sorted_objects)       
             
 
 if __name__ == "__main__":
