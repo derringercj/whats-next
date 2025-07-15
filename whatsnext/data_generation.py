@@ -4,10 +4,8 @@ from urllib.request import urlretrieve
 import constants as constant
 import pandas as pd
 
-import bisect
 import gzip
 import jsonlines
-import operator
 import os
 
 # Replacing object author field currently holding author_id with author name
@@ -93,7 +91,6 @@ def load_books():
     
     return objects
 
-# REPLACE BISECT WITH DICTIONARY
 def replace_author_ids(book_objects):
     author_lookup = {}
     
