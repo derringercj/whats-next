@@ -7,11 +7,6 @@ import pandas as pd
 import gzip
 import jsonlines
 import os
-
-# Replacing object author field currently holding author_id with author name
-def replace_ID(book_object, name):
-    book_object["author"] = name
-
 def download_data():
     # If data folder does not exist, create it and download the necessary json.gz files into it
     try:
@@ -34,46 +29,8 @@ def download_data():
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def filter_book_object(obj):
-    # Saving only relevant information from each object
-    title = obj.get("title")
-    author = obj.get("authors")
-    if type(author) == list:
-        author = ", ".join(author.get("author_id") for author in obj["authors"])
-    date = obj.get("publication_year")
-    length = obj.get("num_pages")
-    desc = obj.get("description")
-
-    # Creating new object with only wanted info
-    new_object = {
-        "title": title,
-        "author": author,
-        "year": date,
-        "num_pages": length,
-        "description": desc
-    }
-
-    # Returning filtered object
-    return new_object
-
-def format_data(objects_list):
-    formatted_strings = []
-
-    # Using information in each object, create contextual string for generating vector embedding
-    for object in objects_list:        
-        compiled_string = (
-            f"Title: {object.get("title")}\n"
-            f"Author: {object.get("author")}\n"
-            f"Publication Year: {object.get("year")}\n"
-            f"Page Length: {object.get("num_pages")}\n"
-            f"Synopsis: {object.get("description")}\n"
-        )
-        formatted_strings.append(compiled_string)
-    
-    # Return list of formatted strings
-    return formatted_strings
-
 def load_books():
+    print("Loading books...")
     # Open books json, and filter each object before saving it to the objects list
     with jsonlines.Reader(gzip.open(constant.BOOKS_FILENAME, mode="rt")) as reader:
         objects = []
@@ -85,13 +42,41 @@ def load_books():
             except:
                 # If ratings_count is empty, skip
                 continue
+
             # Call function to filter out unnecessary book info and add that filtered object to list
             filtered_object = filter_book_object(book_obj)
             objects.append(filtered_object)
     
     return objects
 
+def filter_book_object(obj):
+    # Saving only relevant information from each object
+    title = obj.get("title")
+    author = obj.get("authors")
+    if type(author) == list:
+        author = ", ".join(author.get("author_id") for author in obj["authors"])
+    date = obj.get("publication_year")
+    length = obj.get("num_pages")
+    desc = obj.get("description")
+
+    # Need to save book id for genre assignment later
+    id = obj.get("book_id")
+
+    # Creating new object with only wanted info
+    new_object = {
+        "title": title,
+        "author": author,
+        "year": date,
+        "num_pages": length,
+        "description": desc,
+        "book_id": id
+    }
+
+    # Returning filtered object
+    return new_object
+
 def replace_author_ids(book_objects):
+    print("Adding author names to books...")
     author_lookup = {}
     
     with jsonlines.Reader(gzip.open(constant.AUTHORS_FILENAME, mode="rt")) as reader:
@@ -103,23 +88,57 @@ def replace_author_ids(book_objects):
         if author_ids:
             book["author"] = ", ".join(author_lookup.get(author_id, "Unknown") for author_id in author_ids.split(", "))
 
+def add_genres(book_objects):
+    print("Adding tags to books...")
+    genre_lookup = {}
+    
+    with jsonlines.Reader(gzip.open(constant.GENRES_FILENAME, mode="rt")) as reader:
+        for genre in reader:
+            genre_lookup[genre["book_id"]] = genre["genres"]
+
+    for book in book_objects:
+        book_id = book.get("book_id")
+        if book_id:
+            book.update({"genres": genre_lookup.get(book_id, "Unknown")})
+
+
+def format_data(objects_list):
+    formatted_strings = []
+
+    # Using information in each object, create contextual string for generating vector embedding
+    for object in objects_list:        
+        compiled_string = (
+            f"Title: {object.get("title")}\n"
+            f"Author: {object.get("author")}\n"
+            f"Publication Year: {object.get("year")}\n"
+            f"Page Length: {object.get("num_pages")}\n"
+            f"Genres: {object.get("genres")}\n"
+            f"Synopsis: {object.get("description")}\n"
+        )
+        formatted_strings.append(compiled_string)
+    
+    # Return list of formatted strings
+    return formatted_strings
+
+def save_data(strings):
+    pass
+
 def main():
     download_data()
     books = load_books()  
 
-    # Sorting our objects based on the value of the author_id, making replacement with author name easier
-    sorted_objects = sorted(books, key=lambda x: x.get("authors", ""))
-    # Sorting verification
-    # for i in range(5):
-    #     print(sorted_objects[i].get("author_id"))
-
     # Replace author id in each book object with their actual name
-    replace_author_ids(sorted_objects)
+    replace_author_ids(books)
+    add_genres(books)
 
     # Generate list of strings represnting each book object
-    object_strings = format_data(sorted_objects)       
-            
+    books_strings = format_data(books)    
 
+    for i in range(5):
+        print(books_strings[i])
+
+    save_data(books_strings)
+            
 if __name__ == "__main__":
     main()
 
