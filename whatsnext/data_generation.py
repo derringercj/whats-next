@@ -1,3 +1,5 @@
+# TODO: Create cleaner genres string instead of writing dictionary
+
 from sentence_transformers import SentenceTransformer
 from urllib.request import urlretrieve
 
