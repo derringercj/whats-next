@@ -7,6 +7,7 @@ import pandas as pd
 import gzip
 import jsonlines
 import os
+
 def download_data():
     # If data folder does not exist, create it and download the necessary json.gz files into it
     try:
@@ -29,6 +30,13 @@ def download_data():
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def is_complete_data(obj):
+    required_fields = ["title", "authors", "publication_year", "num_pages", "description"]
+    if any(not obj.get(field) for field in required_fields):
+        return False
+    else:
+        return True
+
 def load_books():
     print("Loading books...")
     # Open books json, and filter each object before saving it to the objects list
@@ -37,7 +45,7 @@ def load_books():
         for book_obj in reader:
             try:
                 # Disregard outlier books
-                if(int(book_obj.get("ratings_count")) < 100):
+                if(int(book_obj.get("ratings_count")) < 100) or (is_complete_data(book_obj)):
                     continue
             except:
                 # If ratings_count is empty, skip
@@ -121,11 +129,12 @@ def format_data(objects_list):
     return formatted_strings
 
 def save_data(strings):
-    pass
+    with open("data/formattedbookobjects.txt", "w") as file:
+        file.writelines(strings)
 
 def main():
     download_data()
-    books = load_books()  
+    books = load_books()
 
     # Replace author id in each book object with their actual name
     replace_author_ids(books)
@@ -133,9 +142,6 @@ def main():
 
     # Generate list of strings represnting each book object
     books_strings = format_data(books)    
-
-    for i in range(5):
-        print(books_strings[i])
 
     save_data(books_strings)
             
