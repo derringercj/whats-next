@@ -1,6 +1,3 @@
-# TODO: Create cleaner genres string instead of writing dictionary
-
-from sentence_transformers import SentenceTransformer
 from urllib.request import urlretrieve
 
 import constants as constant
@@ -33,6 +30,7 @@ def download_data():
         print(f"An error occurred: {e}")
 
 def is_complete_data(obj):
+    # Removing books that are missing any of the required fields
     required_fields = ["title", "authors", "publication_year", "num_pages", "description"]
     if any(not obj.get(field) for field in required_fields):
         return False
@@ -47,7 +45,7 @@ def load_books():
         for book_obj in reader:
             try:
                 # Disregard outlier books
-                if(int(book_obj.get("ratings_count")) < 100) or (is_complete_data(book_obj)):
+                if(int(book_obj.get("ratings_count")) < 100) or (not (is_complete_data(book_obj))):
                     continue
             except:
                 # If ratings_count is empty, skip
@@ -85,32 +83,29 @@ def filter_book_object(obj):
     # Returning filtered object
     return new_object
 
-def replace_author_ids(book_objects):
-    print("Adding author names to books...")
-    author_lookup = {}
+def add_author_and_genre_names(book_objects):
+    print("Adding author names and genre tags to books...")
     
+    author_lookup = {}
+    # For each author in author file, add them to a dictionary indexed by author id.
     with jsonlines.Reader(gzip.open(constant.AUTHORS_FILENAME, mode="rt")) as reader:
         for author in reader:
             author_lookup[author["author_id"]] = author["name"]
 
+    genre_lookup = {}
+    with jsonlines.Reader(gzip.open(constant.GENRES_FILENAME, mode="rt")) as reader:
+        for genre in reader:
+            genre_lookup[genre["book_id"]] = genre["genres"]
+    # For each book in book_objects list, retreive author id from book, then lookup that author's name and add it to book object
     for book in book_objects:
         author_ids = book.get("author")
         if author_ids:
             book["author"] = ", ".join(author_lookup.get(author_id, "Unknown") for author_id in author_ids.split(", "))
-
-def add_genres(book_objects):
-    print("Adding tags to books...")
-    genre_lookup = {}
-    
-    with jsonlines.Reader(gzip.open(constant.GENRES_FILENAME, mode="rt")) as reader:
-        for genre in reader:
-            genre_lookup[genre["book_id"]] = genre["genres"]
-
-    for book in book_objects:
+        
         book_id = book.get("book_id")
         if book_id:
-            book.update({"genres": genre_lookup.get(book_id, "Unknown")})
-
+            genres = ", ".join(f"{value}" for value in genre_lookup.get(book_id))
+            book.update({"genres": genres})
 
 def format_data(objects_list):
     formatted_strings = []
@@ -125,12 +120,14 @@ def format_data(objects_list):
             f"Genres: {object.get("genres")}\n"
             f"Synopsis: {object.get("description")}\n"
         )
+
         formatted_strings.append(compiled_string)
     
     # Return list of formatted strings
     return formatted_strings
 
 def save_data(strings):
+    # Writing strings
     with open("data/formattedbookobjects.txt", "w") as file:
         file.writelines(strings)
 
@@ -139,8 +136,7 @@ def main():
     books = load_books()
 
     # Replace author id in each book object with their actual name
-    replace_author_ids(books)
-    add_genres(books)
+    add_author_and_genre_names(books)
 
     # Generate list of strings represnting each book object
     books_strings = format_data(books)    
@@ -149,4 +145,3 @@ def main():
             
 if __name__ == "__main__":
     main()
-
