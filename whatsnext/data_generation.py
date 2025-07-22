@@ -128,7 +128,7 @@ def format_data(objects_list):
 
 def save_data(strings):
     # Writing strings
-    with open("data/formattedbookobjects.txt", "w") as file:
+    with open(constant.BOOKS_TXT_FILENAME, "w") as file:
         file.writelines(strings)
 
 def main():
