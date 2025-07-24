@@ -6,4 +6,4 @@ GENRES_URL = "https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodr
 GENRES_FILENAME = "extracted_genres.json.gz"
 DIRECTORY_NAME = "data"
 BOOKS_TXT_FILENAME = "data/formattedbookobjects.txt"
-BOOKS_EMBEDDING_PAIRS_FILENAME = "data/bookdata-embeddingpairs.jsonl"
+BOOKS_EMBEDDING_PAIRS_FILENAME = "data/bookdata-embeddingpairs.jsonl.gz"
