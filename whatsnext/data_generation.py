@@ -40,20 +40,21 @@ def is_complete_data(obj):
 def load_books():
     print("Loading books...")
     # Open books json, and filter each object before saving it to the objects list
-    with jsonlines.Reader(gzip.open(constant.BOOKS_FILENAME, mode="rt")) as reader:
+    with jsonlines.Reader(gzip.open(constant.TEST_BOOKS_FILENAME, mode="rt")) as reader:
         objects = []
         for book_obj in reader:
             try:
+                pass
                 # Disregard outlier books
-                if(int(book_obj.get("ratings_count")) < 100) or (not (is_complete_data(book_obj))):
-                    continue
+                # if(int(book_obj.get("ratings_count")) < 100) or (not (is_complete_data(book_obj))):
+                #     continue
             except:
                 # If ratings_count is empty, skip
                 continue
 
             # Call function to filter out unnecessary book info and add that filtered object to list
-            filtered_object = filter_book_object(book_obj)
-            objects.append(filtered_object)
+            # filtered_object = filter_book_object(book_obj)
+            objects.append(book_obj)
     
     return objects
 
@@ -132,11 +133,11 @@ def save_data(strings):
         file.writelines(strings)
 
 def main():
-    download_data()
+    # download_data()
     books = load_books()
 
     # Replace author id in each book object with their actual name
-    add_author_and_genre_names(books)
+    # add_author_and_genre_names(books)
 
     # Generate list of strings represnting each book object
     books_strings = format_data(books)    

@@ -2,4 +2,3 @@ whatsnextenv
 whats_next.egg-info/
 whatsnext/__pycache__/
 whatsnext/data
-**/*.json.gz

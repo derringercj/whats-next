@@ -10,7 +10,7 @@ def load_books():
     # Opening the saved books text file, reading the data, and splitting it on the title delimiter
     with open(constant.BOOKS_TXT_FILENAME, "r") as file:
         text = file.read()
-        books = re.split(r'(?=Title:)', text)
+        books = [book for book in re.split(r'(?=Title:)', text) if book.strip()]
 
     return books
 
@@ -35,6 +35,7 @@ def save_dictionary(book_dict):
     
 def main():
     books = load_books()
+    print(len(books))
     # Generating embeddings for each book string in the text file
     model = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = model.encode(sentences=books, batch_size=32, show_progress_bar=True)
