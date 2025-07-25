@@ -10,7 +10,7 @@ def load_books():
     # Opening the saved books text file, reading the data, and splitting it on the title delimiter
     with open(constant.BOOKS_TXT_FILENAME, "r") as file:
         text = file.read()
-        books = re.split(r'(?=Title:)', text)
+        books = [book for book in re.split(r'(?=Title:)', text) if book.strip()]
 
     return books
 

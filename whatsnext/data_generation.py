@@ -11,6 +11,7 @@ def download_data():
     # If data folder does not exist, create it and download the necessary json.gz files into it
     try:
         os.mkdir(constant.DIRECTORY_NAME)
+        os.chdir(constant.DIRECTORY_NAME)
         print(f"Directory '{constant.DIRECTORY_NAME}' CREATED SUCCESSFULLY.")
         
         print("Beginning Data Download")
@@ -22,6 +23,7 @@ def download_data():
         
         urlretrieve(constant.GENRES_URL, constant.GENRES_FILENAME)
         print("Genres Dataset Downloaded")
+        os.chdir("..")
 
     # Otherwise continue with program as normal
     except FileExistsError:
