@@ -72,9 +72,6 @@ def compile_results(indicies, scores, titles, k):
         title = titles[index]
         results.append((title, score))
 
-    for i, (title, score) in enumerate(results):
-        print(f"{i+1}. {title} (similarity: {score:.6f})")
-
     return results
 
 def main():
