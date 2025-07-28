@@ -1,4 +1,3 @@
-# TODO: 
 
 import constants as constant
 import numpy as np
@@ -75,7 +74,7 @@ def compile_results(indicies, scores, titles, k):
     return results
 
 def main():
-
+    print("loading data")
     books_db = load_data()
     
     index, titles = generate_index(books_db)
