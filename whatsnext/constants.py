@@ -1,4 +1,4 @@
-BOOKS_URL = "https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_book_works.json.gz"
+BOOKS_URL = "https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_books.json.gz"
 BOOKS_FILENAME = "data/books.json.gz"
 AUTHORS_URL = "https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_book_authors.json.gz"
 AUTHORS_FILENAME = "data/authors.json.gz"
