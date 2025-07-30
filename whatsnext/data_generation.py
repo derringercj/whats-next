@@ -1,3 +1,4 @@
+#TODO Implement another technique to remove additional duplicates that aren't covered in abstract dataset
 from urllib.request import urlretrieve
 
 import constants as constant
@@ -16,6 +17,9 @@ def download_data():
         print("Beginning Data Download")
         urlretrieve(constant.BOOKS_URL, constant.BOOKS_FILENAME)
         print("Books Dataset Downloaded")
+
+        urlretrieve(constant.WORKS_URL, constant.WORKS_FILENAME)
+        print("Works Dataset Downloaded")
         
         urlretrieve(constant.AUTHORS_URL, constant.AUTHORS_FILENAME)
         print("Authors Dataset Downloaded")
@@ -26,7 +30,6 @@ def download_data():
     # Otherwise continue with program as normal
     except FileExistsError:
         print(f"Directory '{constant.DIRECTORY_NAME}' already exists. Continuing...")
-        os.chdir(constant.DIRECTORY_NAME)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -38,26 +41,6 @@ def is_complete_data(obj):
         return False
     else:
         return True
-
-def load_books():
-    print("Loading books...")
-    # Open books json, and filter each object before saving it to the objects list
-    with jsonlines.Reader(gzip.open(constant.BOOKS_FILENAME, mode="rt")) as reader:
-        objects = []
-        for book_obj in reader:
-            try:
-                # Disregard outlier books
-                if(int(book_obj.get("ratings_count")) < 100) or (not (is_complete_data(book_obj))):
-                    continue
-            except:
-                # If ratings_count is empty, skip
-                continue
-
-            # Call function to filter out unnecessary book info and add that filtered object to list
-            filtered_object = filter_book_object(book_obj)
-            objects.append(filtered_object)
-    
-    return objects
 
 def filter_book_object(obj):
     # Saving only relevant information from each object
@@ -84,6 +67,48 @@ def filter_book_object(obj):
 
     # Returning filtered object
     return new_object
+
+def load_books():
+    print("Loading books...")
+    # Open books json, and filter each object before saving it to the objects list
+    with jsonlines.Reader(gzip.open(constant.BOOKS_FILENAME, mode="rt")) as reader:
+        objects = []
+        for book_obj in reader:
+            try:
+                # Disregard outlier books
+                if(int(book_obj.get("ratings_count")) < 100) or (not (is_complete_data(book_obj))):
+                    continue
+            except:
+                # If ratings_count is empty, skip
+                continue
+
+            # Call function to filter out unnecessary book info and add that filtered object to list
+            filtered_object = filter_book_object(book_obj)
+            objects.append(filtered_object)
+    
+    return objects
+
+def remove_duplicates(books):
+    print("Removing duplicates...")
+    # Create lookup that stores abstract work title and "best id"
+    best_works = {}
+    with jsonlines.Reader(gzip.open(constant.WORKS_FILENAME, mode="rt")) as reader:
+        for works_obj in reader:
+            work_title = works_obj.get("original_title")
+            work_id = works_obj.get("best_book_id")
+            best_works[work_title] = work_id
+    
+    # Create list of books with duplicates filtered out by checking if the book entry matches the "best id" entry
+    filtered_books = []
+    for book in books:
+        book_title = book.get("title")
+        book_id = book.get("book_id")
+
+        best_id = best_works.get(book_title)
+        if best_id is None or best_id == book_id:
+            filtered_books.append(book)
+    
+    return filtered_books
 
 def add_author_and_genre_names(book_objects):
     print("Adding author names and genre tags to books...")
@@ -136,12 +161,14 @@ def save_data(strings):
 def main():
     download_data()
     books = load_books()
+    
+    no_duplicate_books = remove_duplicates(books)
 
     # Replace author id in each book object with their actual name
-    add_author_and_genre_names(books)
+    add_author_and_genre_names(no_duplicate_books)
 
     # Generate list of strings represnting each book object
-    books_strings = format_data(books)    
+    books_strings = format_data(no_duplicate_books)    
 
     save_data(books_strings)
             

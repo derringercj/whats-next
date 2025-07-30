@@ -33,15 +33,14 @@ def generate_index(books_db):
     return index, titles
 
 def user_prompt():
-    # Prompting user for information related to search
-    print("How many books are you looking for today?")
-    k = int(input())
-    
-    print("Please enter a title:")
+    print("Please enter a title: (quit to close program)")
     query_title = input()
+    if(query_title == "quit"):
+        print("Have a good day :)")
+        exit()
     query_title = "Title: " + query_title
     
-    return query_title, k
+    return query_title
 
 def search(query_title, books_db, index, k):
     # Retreiving the query embedding from the user's selected book
@@ -54,7 +53,6 @@ def search(query_title, books_db, index, k):
     if query_embedding is None:
         raise ValueError(f"Book '{query_title}' not found in dataset")
     
-
     # Creating np array of our query's embedding
     query = np.array([query_embedding], dtype="float32")
 
@@ -79,16 +77,23 @@ def main():
     
     index, titles = generate_index(books_db)
     
-    query_title, k = user_prompt()
+    # Prompting user for information related to search
+    print("How many books are you looking for today?")
+    k = int(input())
+    
+    query_title = user_prompt()
 
-    scores, indicies = search(query_title, books_db, index, k)
+    running = True
+    while running:
+        scores, indicies = search(query_title, books_db, index, k)
 
-    results = compile_results(indicies, scores, titles, k)
+        results = compile_results(indicies, scores, titles, k)
 
-    # Printing our compiled results
-    for i, (title, score) in enumerate(results):
-        print(f"{i+1}. {title} (similarity: {score:.6f})")
-
+        # Printing our compiled results
+        for i, (title, score) in enumerate(results):
+            print(f"{i+1}. {title} (similarity: {score:.6f})")
+        
+        query_title = user_prompt()
 
 if __name__ == "__main__":
     main()
