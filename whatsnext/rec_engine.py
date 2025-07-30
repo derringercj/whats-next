@@ -1,4 +1,4 @@
-
+#TODO: Implement method for user to clarify their book submission if it is not initially present in the database
 import constants as constant
 import numpy as np
 
