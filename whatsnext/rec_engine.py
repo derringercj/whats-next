@@ -1,4 +1,6 @@
-#TODO: Implement method for user to clarify their book submission if it is not initially present in the database
+#TODO: Code a fuzzy search. If a user's search is not found in the database, 
+# allow them to either query again or check if the closest title match is what they meant to query
+
 import constants as constant
 import numpy as np
 

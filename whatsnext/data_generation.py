@@ -1,4 +1,4 @@
-#TODO Implement another technique to remove additional duplicates that aren't covered in abstract dataset
+#TODO: Implement another technique to remove additional duplicates that aren't covered in abstract dataset
 from urllib.request import urlretrieve
 
 import constants as constant
