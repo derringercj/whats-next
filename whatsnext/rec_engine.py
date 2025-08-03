@@ -1,6 +1,3 @@
-#TODO: Code a fuzzy search. If a user's search is not found in the database, 
-# allow them to either query again or check if the closest title match is what they meant to query
-
 import constants as constant
 import numpy as np
 
@@ -53,7 +50,17 @@ def search(query_title, books_db, index, k):
             query_embedding = book["vector"]
 
     if query_embedding is None:
-        raise ValueError(f"Book '{query_title}' not found in dataset")
+        print(f"Book '{query_title}' not found in dataset")
+        for book in books_db:
+            if query_title in book["title"]:
+                print(f"Did you mean '{book["title"]}'? (yes or no)")
+                response = input()
+                if response == "yes":
+                    query_embedding = book["vector"]
+                    break
+                else:
+                    continue
+
     
     # Creating np array of our query's embedding
     query = np.array([query_embedding], dtype="float32")
