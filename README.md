@@ -18,3 +18,10 @@ loaded to start, and from this data a FAISS index is generated. The user is then
 relevant recommendation information, then the main loop starts. A search is performed on the index with a user inputted query title, and the index returns the scores and indicies from the
 index search. The results are then compiled in a user readable format and printed to the console.
 Finally, the user can either enter another book or type "quit" to quit.
+
+## Future Work
+- Could potentially leverage more machine learning techniques beyond simple vectorization for better recommendations, i.e. feed vectors, and other features to a model to match a book
+- Convert data handling to use pandas instead of pure lists of dictionaries. This will allow for easier data manipulation and exploration
+- Improve the cleaning of the data to remove potential duplicates, as they are rampant in the final model
+- Change features we are vectorizing
+- Scrape information from book reviews or synopsis to extract tags describing the books, to help with the recommendation system. Can use KeyBERT for this with seed keywords listing out all possible genres and subgenres we want to look for, including the top 5 or so as "tags".
